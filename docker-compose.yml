@@ -1,0 +1,117 @@
+version: "3.9"
+services:
+  discovery:
+    build: .\eureka-server
+    ports:
+      - "8761:8761"
+    image: "discovery-service"
+
+
+  seminaire:
+    build: .\Group
+    ports:
+     - "8089:8089"
+    image: "seminaire-service"
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka
+      - SPRING_DATA_MONGODB_URI=mongodb://Mongo:27017/seminaire
+    depends_on:
+      - discovery
+      - Mongo
+
+  Mongo:
+    image: "mongo:latest"
+
+    ports:
+      - "27017:27017"
+
+
+
+  biblio:
+    build: .\Bibliotheque
+    ports:
+      - "8081:8081"
+    image: "bibliotheque-service"
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka
+
+    depends_on:
+      - discovery
+      - docker-bibliotheque-mysql
+
+
+  docker-bibliotheque-mysql:
+    image: "mysql:5.6"
+    environment:
+      - MYSQL_DATABASE=dhouhabase
+      - MYSQL_ROOT_PASSWORD=mysql
+
+    ports:
+      - "3310:3306"
+
+
+  enseignant:
+    build: .\Enseignant-service
+    ports:
+        - "8087:8087"
+    image: "enseignant-service"
+    environment:
+        - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka
+
+    depends_on:
+        - discovery
+        - docker-enseignant-mysql
+
+
+  docker-enseignant-mysql:
+      image: "mysql:5.6"
+      environment:
+          - MYSQL_DATABASE=ens
+          - MYSQL_ROOT_PASSWORD=mysql
+
+      ports:
+          - "3309:3306"
+
+  etudiant:
+    build: .\Etudiant-service
+    ports:
+      - "8083:8083"
+    image: "etudiant-service"
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka
+
+    depends_on:
+        - discovery
+        - docker-etudiant-mysql
+
+
+  docker-etudiant-mysql:
+        image: "mysql:5.6"
+        environment:
+          - MYSQL_DATABASE=gestionetudiant
+          - MYSQL_ROOT_PASSWORD=mysql
+
+        ports:
+          - "3307:3306"
+
+  club:
+    build: .\Club-server
+    ports:
+      - "8085:8085"
+    image: "club-service"
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka
+
+    depends_on:
+      - discovery
+      - docker-club-mysql
+
+
+  docker-club-mysql:
+    image: "mysql:5.6"
+    environment:
+      - MYSQL_DATABASE=dorsafbase
+      - MYSQL_ROOT_PASSWORD=mysql
+
+    ports:
+      - "3308:3306"
